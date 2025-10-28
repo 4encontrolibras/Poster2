@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Avaliação de Pôster</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; line-height:1.4; color:#222; }
+  h1 { font-size: 1.6rem; margin-bottom: 12px; }
+  .poster { border: 1px solid #ddd; padding: 14px; margin-bottom: 18px; border-radius:6px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+  iframe { width: 100%; height: 420px; border: 1px solid #ccc; border-radius:4px; }
+  label { display: block; margin: 8px 0 6px; font-weight:600; }
+  .radios { margin: 6px 0 10px; }
+  .radios input { margin-left: 8px; margin-right:4px; }
+  textarea { width: 100%; min-height: 70px; padding:8px; border-radius:4px; border:1px solid #ccc; resize: vertical; }
+  select { padding:6px; border-radius:4px; border:1px solid #ccc; }
+  button { margin-top:10px; padding:8px 12px; border-radius:6px; border:none; background:#2b7cff; color:white; cursor:pointer; }
+  button:disabled { opacity:0.6; cursor:not-allowed; }
+  .thanks { padding:10px; background:#e6ffed; border:1px solid #b9f0c6; color:#1b6b2a; border-radius:6px; font-weight:600; }
+  .meta { font-size:0.9rem; color:#555; margin-bottom:10px; }
+  @media (min-width:900px){ iframe{ height:480px; } }
+</style>
+</head>
+<body>
+
+<h1>Avaliação de Pôster</h1>
+<p class="meta">
+Selecione o resultado, escreva observações se necessário, escolha seu nome e clique em <strong>Enviar</strong>.
+O resultado será enviado automaticamente para <strong>4encontrolibras@gmail.com</strong>.
+</p>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpKpAEcC_cKwKD15XJYpqI3NrqZTBhB1KfddZSNkG8ccKD5AUBmkn1laCqoX8mY83oQA/exec";
+
+const posters = [
+  {id:1, pdf:"https://drive.google.com/file/d/1JRQbsrKX5K27727N00cTWVis89fo_2zh/preview"},
+  {id:2, pdf:"https://drive.google.com/file/d/1X5N8tVWpNOo9DVE1vlrb8sWK_qDAMHNG/preview"},
+  {id:3, pdf:"https://drive.google.com/file/d/1WqOrFDb-9CW0xQPhbFuFr7WPljdVnS4x/preview"},
+  {id:4, pdf:"https://drive.google.com/file/d/1Wyf1n7r1gR__XdRNh6O6KuHwsZAG-SYT/preview"},
+  {id:5, pdf:"https://drive.google.com/file/d/1RqCa2_JeMMb84ILoQhdcakEyT2Ky_Xbe/preview"},
+  {id:6, pdf:"https://drive.google.com/file/d/1RnztRKmd_Fouqoz8Ldv2Kew_B8fuZY2S/preview"},
+  {id:7, pdf:"https://drive.google.com/file/d/1NCw0M4zOuq8o08Sac78Jzk0j-udLehba/preview"},
+  {id:8, pdf:"https://drive.google.com/file/d/14vtufpLSserpdSAoNGf-FMbTd6cEN6ks/preview"},
+  {id:9, pdf:"https://drive.google.com/file/d/1szz3zabexXM79rc-ZW1OPz3P_qrTWfk0/preview"},
+  {id:10, pdf:"https://drive.google.com/file/d/1g7QmIQNmtUuKpb0S_o3fHtcr8mEyV5u5/preview"},
+  {id:11, pdf:"https://drive.google.com/file/d/1wykNGVmsMuRnV3Wx8Kzf4nhl5dw3pImf/preview"},
+  {id:12, pdf:"https://drive.google.com/file/d/1_UzemVbx0iN_jMdqbsVzuV7a7J0COF3s/preview"},
+  {id:13, pdf:"https://drive.google.com/file/d/1dTsScmqgSHddA93ob9jowluyGt6beWsJ/preview"}
+];
+
+const avaliadores = ["Ana Regina", "Fernanda Soares", "Heloise Gripp", "Luciane Cruz", "Priscilla Cavalcante"];
+
+posters.forEach(p => {
+  const container = document.createElement('div');
+  container.className = 'poster';
+  container.innerHTML = `
+    <h2>Avaliação ${p.id}</h2>
+    <iframe src="${p.pdf}" title="Pôster ${p.id}"></iframe>
+    <form id="form${p.id}">
+      <label>Selecione o resultado:</label>
+      <div class="radios">
+        <label><input type="radio" name="status" value="Aprovado" required> Aprovado</label>
+        <label><input type="radio" name="status" value="Aprovado com correções"> Aprovado com correções</label>
+        <label><input type="radio" name="status" value="Reprovado"> Reprovado</label>
+      </div>
+      <label>Observações (opcional):</label>
+      <textarea name="observacoes" placeholder="Escreva suas observações..."></textarea>
+      <label>Avaliador:</label>
+      <select name="avaliador" required>
+        <option value="">Selecione</option>
+        ${avaliadores.map(a => `<option value="${a}">${a}</option>`).join('')}
+      </select>
+      <div>
+        <button type="submit">Enviar</button>
+      </div>
+    </form>
+  `;
+  document.body.appendChild(container);
+
+  const form = container.querySelector('form');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    formData.append("id", p.id);
+
+    form.querySelector("button").disabled = true;
+    form.querySelector("button").textContent = "Enviando...";
+
+    try {
+      const res = await fetch(SCRIPT_URL, { method: "POST", body: formData });
+      const text = await res.text();
+
+      if (text.includes("OK")) {
+        form.innerHTML = `<div class="thanks">Obrigado pela avaliação! (Avaliação ${p.id})</div>`;
+      } else {
+        alert("Erro ao enviar. Tente novamente.");
+        console.log(text);
+      }
+    } catch (err) {
+      alert("Erro de conexão. Verifique sua internet.");
+      console.error(err);
+    }
+  });
+});
+</script>
+
+</body>
+</html>
